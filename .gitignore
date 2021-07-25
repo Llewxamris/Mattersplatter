@@ -1,0 +1,8 @@
+/build/
+/.ccls-cache/
+/*.out
+/*.out.*
+/vgcore.*
+/vg.*
+/*.txt
+/*.asm
