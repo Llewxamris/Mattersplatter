@@ -21,6 +21,7 @@
 #include <inttypes.h>
 #include <libgen.h>
 #include <limits.h>
+#include <regex.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -36,13 +37,14 @@
 #include "parser.h"
 
 static const char *usage_msg =
-	"Usage: mattersplatter [-o outfile] [-v] [-d] filename\n"
-	"       mattersplatter -b [-v] [-d] filename\n"
+	"Usage: mattersplatter [-o outfile] [-m size] [-v] [-d] filename\n"
+	"       mattersplatter -b [-m size] [-v] [-d] filename\n"
 	"       mattersplatter -h\n"
 	"\n"
 	"       -b        \tRun in batch mode.\n"
 	"       -d        \tShow debug output.\n"
 	"       -h        \tDisplay this message.\n"
+	"       -m size   \tSet the amount of memory cells to size [30000].\n"
 	"       -o outfile\tWrite output to outfile.\n"
 	"       -v        \tShow verbose output.";
 
@@ -53,6 +55,7 @@ OPTIONS_FILE_TOO_LONG,
 OPTIONS_OUT_FILE_TOO_LONG,
 OPTIONS_MISSING_ARG,
 OPTIONS_UNKNOWN_ARG,
+OPTIONS_INVALID_MEMORY_SIZE
 };
 
 enum options_mode {
@@ -69,15 +72,19 @@ struct options {
 	enum options_result result;
 	enum options_mode mode;
 	char wrong_opt;
+	uintmax_t mem_size;
 };
 
 static struct options
 options_create(int argc, char *argv[])
 {
 	struct options o = { .is_verbose = false, .is_debug = false };
+	o.mem_size = 30000;
 	o.mode = MODE_COMPILER;
 	int opt;
-	while ((opt = getopt(argc, argv, ":bdho:v")) != -1) {
+	const char memsize_pattern[] = "^[0-9]+$";
+	regex_t  memsize_regex = {0};
+	while ((opt = getopt(argc, argv, ":bdhm:o:v")) != -1) {
 		switch (opt) {
 			case 'b':
 				o.mode = MODE_INTERPRETER;
@@ -88,6 +95,26 @@ options_create(int argc, char *argv[])
 			case 'h':
 				o.mode = MODE_HELP;
 				return o;
+			case 'm':
+				regcomp(&memsize_regex,
+					memsize_pattern,
+					REG_EXTENDED | REG_NOSUB);
+				if (regexec(&memsize_regex, optarg, 0, NULL, 0)
+				    != 0) {
+					o.result = OPTIONS_INVALID_MEMORY_SIZE;
+					regfree(&memsize_regex);
+					return o;
+				}
+				regfree(&memsize_regex);
+				errno = 0;
+				o.mem_size = strtoumax(optarg, NULL, 10);
+				if ((o.mem_size == INTMAX_MAX
+				     || o.mem_size == UINTMAX_MAX) && errno) {
+					o.result = OPTIONS_INVALID_MEMORY_SIZE;
+					return o;
+				}
+				printf("%lu", o.mem_size);
+				break;
 			case 'o':
 				if (strlen(optarg) > FILENAME_MAX) {
 					o.result = OPTIONS_OUT_FILE_TOO_LONG;
@@ -379,11 +406,10 @@ main(int argc, char *argv[])
 	free(source_code);
 
 	struct ast *ast = construct_ast(tokens, token_count);
-	char mem[30000] = {0};
 
 	struct invoke_assembler_result invoke_result = {0};
 	if (opts.mode == MODE_COMPILER) {
-		struct compilation_result cresults = compile(ast, 30000);
+		struct compilation_result cresults = compile(ast, opts.mem_size);
 		write_assembly_to_disk(cresults);
 		compilation_result_destroy(cresults);
 		invoke_result = invoke_assembler(opts.out_file_name);
@@ -393,7 +419,9 @@ main(int argc, char *argv[])
 		}
 
 	} else {
-		execute(ast, mem, 30000);
+		char *mem = calloc(opts.mem_size, sizeof(char *));
+		execute(ast, mem, opts.mem_size);
+		free(mem);
 	}
 
 	free(tokens);
@@ -421,6 +449,11 @@ main_opt_error:
 			fprintf(stderr,
 				"Unknown option -%c.\n",
 				opts.wrong_opt);
+			fprintf(stderr, "%s", usage_msg);
+			break;
+		case OPTIONS_INVALID_MEMORY_SIZE:
+			fprintf(stderr,
+				"Invalid memory size.\n");
 			fprintf(stderr, "%s", usage_msg);
 			break;
 		default:

@@ -6,7 +6,7 @@ mattersplatter - brainf\*ck compiler & interpreter
 
 # SYNOPSIS
 
-*mattersplatter* [[-o _outfile_] | -b] [-v] [-d] _filename_
+*mattersplatter* [[-o _outfile_] | -b] [-m _size_] [-v] [-d] _filename_
 
 # DESCRIPTION
 
@@ -38,6 +38,10 @@ during compile time.
 *-h*
 	Displays the usage information. The usage information is also shown if an
 	unknown option is declared, or if an option is missing an argument.
+
+*-m*
+	_size_ Specify the number of memory cells available to the program. Value
+	must be a positive integer. By default, the size is set to 30,000.
 
 *-o* _outfile_
 	Specify a name for the output binary instead of *mattersplatter* choosing a
