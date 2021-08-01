@@ -48,4 +48,4 @@ during compile time.
 	name. This option is ignored if the *-b* option is present.
 
 *-v*
-	Sends verbos output to _stdout_.
+	Sends verbose output to _stdout_.
