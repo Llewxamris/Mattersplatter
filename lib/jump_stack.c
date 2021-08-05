@@ -24,7 +24,7 @@ jump_stack_create(void)
 {
 	struct jump_stack jstack;
 	jstack.size = 0;
-	jstack.stack = (struct ast **) calloc(1, sizeof(struct ast *));
+	jstack.stack = (struct matsplat_ast **) calloc(1, sizeof(struct ast *));
 	return jstack;
 }
 
@@ -39,7 +39,7 @@ jump_stack_destroy(struct jump_stack jstack)
 }
 
 void
-push_jump_stack(struct ast *jump_node, struct jump_stack *jstack)
+push_jump_stack(struct matsplat_ast *jump_node, struct jump_stack *jstack)
 {
 	if (jstack->size == 0) {
 		jstack->stack[0] = jump_node;
@@ -48,13 +48,15 @@ push_jump_stack(struct ast *jump_node, struct jump_stack *jstack)
 	}
 
 	size_t new_len = jstack->size + 1;
-	jstack->stack = (struct ast **) realloc(jstack->stack, new_len * sizeof(struct ast *));
+	jstack->stack =
+		(struct matsplat_ast **)
+		realloc(jstack->stack, new_len * sizeof(struct matsplat_ast *));
 	jstack->stack[jstack->size] = jump_node;
 	jstack->size = new_len;
 }
 
 void
-pop_jump_stack(struct ast **out, struct jump_stack *jstack)
+pop_jump_stack(struct matsplat_ast **out, struct jump_stack *jstack)
 {
 	if (jstack->size == 0) {
 		*out = NULL;
@@ -65,9 +67,13 @@ pop_jump_stack(struct ast **out, struct jump_stack *jstack)
 	*out = jstack->stack[new_len];
 	jstack->stack[new_len] = NULL;
 	if (new_len <= 0) {
-		jstack->stack = (struct ast **) realloc(jstack->stack, 1 * sizeof(struct ast *));
+		jstack->stack =
+			(struct matsplat_ast **)
+			realloc(jstack->stack, 1 * sizeof(struct ast *));
 	} else {
-		jstack->stack = (struct ast **) realloc(jstack->stack, new_len * sizeof(struct ast *));
+		jstack->stack =
+			(struct matsplat_ast **)
+			realloc(jstack->stack, new_len * sizeof(struct ast *));
 	}
 	jstack->size = new_len;
 }

@@ -31,10 +31,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "compiler.h"
-#include "interpreter.h"
-#include "lexer.h"
-#include "parser.h"
+#include <mattersplatter.h>
 
 static const char *usage_msg =
 	"Usage: mattersplatter [-o outfile] [-m size] [-v] [-d] filename\n"
@@ -210,7 +207,7 @@ load_file_to_buffer_error:
 }
 
 static size_t
-write_assembly_to_disk(const struct compilation_result compr)
+write_assembly_to_disk(const struct matsplat_compilation_result compr)
 {
 	size_t size;
 	FILE *f = fopen("out.asm", "w");
@@ -254,16 +251,16 @@ printd_file(const char *contents, const char *file_name, const size_t size,
 }
 
 static void
-printd_tokens(const struct token *tokens, const size_t size,
+printd_tokens(const struct matsplat_src_token *tokens, const size_t size,
 	      struct options opts)
 {
 	if (opts.is_debug) {
 		print_timestamp();
 		printf("The following is the output of the lexer.\n");
 		for (size_t i = 0; i <= size; i++) {
-			struct token t = tokens[i];
-			struct token_human_readable thr =
-				token_type_to_human_readable(t.type);
+			struct matsplat_src_token t = tokens[i];
+			struct matsplat_token_human_readable thr =
+				matsplat_token_to_human_readable(t.type);
 			printf("Token #%zu: %s \"%c\" (%" PRIuMAX ", %" PRIuMAX ")\n",
 			       i,
 			       thr.description,
@@ -371,7 +368,7 @@ main(int argc, char *argv[])
 {
 	const struct options opts = options_create(argc, argv);
 	char *source_code = NULL;
-	struct token *tokens = NULL;
+	struct matsplat_src_token *tokens = NULL;
 	intmax_t file_size;
 	size_t token_count;
 	uint8_t err = 0;
@@ -398,20 +395,20 @@ main(int argc, char *argv[])
 		 opts.in_file_name);
 	printd_file(source_code, opts.in_file_name, file_size, opts);
 
-	tokens = calloc(file_size, sizeof(struct token));
+	tokens = calloc(file_size, sizeof(struct matsplat_src_token));
 	printf_v(opts, "Lexer beginning to parse source code...\n");
-	token_count = tokenize(source_code, tokens, file_size);
+	token_count = matsplat_tokenize(source_code, tokens, file_size);
 	printf_v(opts, "..parsing complete (enable debug for more information).\n");
 	printd_tokens(tokens, token_count, opts);
 	free(source_code);
 
-	struct ast *ast = construct_ast(tokens, token_count);
+	struct matsplat_ast *ast = matsplat_construct_ast(tokens, token_count);
 
 	struct invoke_assembler_result invoke_result = {0};
 	if (opts.mode == MODE_COMPILER) {
-		struct compilation_result cresults = compile(ast, opts.mem_size);
+		struct matsplat_compilation_result cresults = matsplat_compile(ast, opts.mem_size);
 		write_assembly_to_disk(cresults);
-		compilation_result_destroy(cresults);
+		matsplat_compilation_result_destroy(cresults);
 		invoke_result = invoke_assembler(opts.out_file_name);
 
 		if (invoke_result.status != INVOKE_SUCCESS) {
@@ -420,12 +417,12 @@ main(int argc, char *argv[])
 
 	} else {
 		char *mem = calloc(opts.mem_size, sizeof(char *));
-		execute(ast, mem, opts.mem_size);
+		matsplat_execute(ast, mem, opts.mem_size);
 		free(mem);
 	}
 
 	free(tokens);
-	ast_destroy(ast);
+	matsplat_ast_destroy(ast);
 	exit(EXIT_SUCCESS);
 
 main_opt_error:

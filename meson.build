@@ -22,18 +22,30 @@ if not ld.found()
   warning('\'ld\' not found on current machine. Compiler will not function correctly.')
 endif
 
+ms_lib = library('mattersplatter',
+  [
+    'lib/compiler.c',
+    'lib/interpreter.c',
+    'lib/jump_stack.c',
+    'lib/lexer.c',
+    'lib/parser.c',
+    'lib/mattersplatter.c'
+  ],
+  soversion: '0.1.0',
+  include_directories: ms_include,
+  dependencies: math_dep,
+  install: true
+)
+
+install_headers('include/mattersplatter.h')
+ms = declare_dependency(link_with: ms_lib, include_directories: ms_include)
+
 ms_exe = executable(
   'mattersplatter',
   [
     'main.c',
-    'compiler.c',
-    'interpreter.c',
-    'jump_stack.c',
-    'lexer.c',
-    'parser.c',
   ],
-  include_directories: ms_include,
-  dependencies: math_dep,
+  dependencies: [ms],
   install: true
 )
 

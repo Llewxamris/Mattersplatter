@@ -19,35 +19,35 @@
 #include <stdlib.h>
 
 #include "jump_stack.h"
-#include "parser.h"
-#include "tokens.h"
+#include "mattersplatter.h"
 
 void
-ast_destroy(struct ast *ast) {
+matsplat_ast_destroy(struct matsplat_ast *ast) {
 	if (ast->left_child) {
-		ast_destroy(ast->left_child);
+		matsplat_ast_destroy(ast->left_child);
 	}
 
 	if (ast->right_child) {
-		ast_destroy(ast->right_child);
+		matsplat_ast_destroy(ast->right_child);
 	}
 
 	free(ast);
 }
 
-struct ast
-*construct_ast(struct token *tokens, size_t token_ln)
+struct matsplat_ast
+*matsplat_construct_ast(struct matsplat_src_token *tokens, size_t token_ln)
 {
-	struct ast *root = NULL;
-	struct ast *current = NULL;
-	struct ast *parent = NULL;
+	struct matsplat_ast *root = NULL;
+	struct matsplat_ast *current = NULL;
+	struct matsplat_ast *parent = NULL;
 	struct jump_stack jump_stack = jump_stack_create();
 	bool is_flow_left = false;
 
 	for(size_t i = 0; i <= token_ln; i++) {
 		/* Explicitly handle setting the root node. */
 		if (root == NULL) {
-			root = (struct ast*) malloc(sizeof(struct ast));
+			root = (struct matsplat_ast*)
+				malloc(sizeof(struct matsplat_ast));
 			root->parent = NULL;
 			root->left_child = NULL;
 			root->right_child = NULL;
@@ -55,8 +55,9 @@ struct ast
 			parent = root;
 			continue;
 		}
-		struct token *t = &tokens[i];
-		current = (struct ast*) malloc(sizeof(struct ast));
+		struct matsplat_src_token *t = &tokens[i];
+		current = (struct matsplat_ast*)
+			malloc(sizeof(struct matsplat_ast));
 		current->parent = parent;
 		current->left_child = NULL;
 		current->right_child = NULL;

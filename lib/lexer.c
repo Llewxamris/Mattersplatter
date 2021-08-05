@@ -17,9 +17,9 @@
  */
 #include <stdint.h>
 
-#include "lexer.h"
+#include "mattersplatter.h"
 
-static enum token_type
+static enum matsplat_token
 check_token_type(char c)
 {
 	switch(c) {
@@ -46,35 +46,56 @@ check_token_type(char c)
 	}
 }
 
-struct token_human_readable
-token_type_to_human_readable(const enum token_type type)
+struct matsplat_token_human_readable
+matsplat_token_to_human_readable(const enum matsplat_token type)
 {
 	switch(type) {
 		case POINTER_RIGHT:
-			return (struct token_human_readable) {'<', "Pointer right"};
+			return (struct matsplat_token_human_readable) {
+			'<', "Pointer right"
+
+		};
 		case POINTER_LEFT:
-			return (struct token_human_readable) {'>', "Pointer left"};
+			return (struct matsplat_token_human_readable) {
+			'>', "Pointer left"
+		};
 		case INCREMENT:
-			return (struct token_human_readable) {'+', "Increment"};
+			return (struct matsplat_token_human_readable) {
+			'+', "Increment"
+		};
 		case DECREMENT:
-			return (struct token_human_readable) {'-', "Decrement"};
+			return (struct matsplat_token_human_readable) {
+			'-', "Decrement"
+		};
 		case OUTPUT:
-			return (struct token_human_readable) {'.', "Output"};
+			return (struct matsplat_token_human_readable) {
+			'.', "Output"
+		};
 		case INPUT:
-			return (struct token_human_readable) {',', "Input"};
+			return (struct matsplat_token_human_readable) {
+			',', "Input"
+		};
 		case JUMP_FORWARD:
-			return (struct token_human_readable) {'[', "Jump forward"};
+			return (struct matsplat_token_human_readable) {
+			'[', "Jump forward"
+		};
 		case JUMP_BACKWARDS:
-			return (struct token_human_readable) {']', "Jump backwards"};
+			return (struct matsplat_token_human_readable) {
+			']', "Jump backwards"
+		};
 		case END:
-			return (struct token_human_readable) {'\0', "End of file"};
+			return (struct matsplat_token_human_readable) {
+			'\0', "End of file"
+		};
 		default:
-			return (struct token_human_readable) {' ', "Comment"};
+			return (struct matsplat_token_human_readable) {
+			' ', "Comment"
+		};
 	}
 }
 
 size_t
-tokenize(const char *source_code, struct token *tokens, const size_t size)
+matsplat_tokenize(const char *source_code, struct matsplat_src_token *tokens, const size_t size)
 {
 	uintmax_t col = 0;
 	uintmax_t row = 1;
@@ -82,7 +103,7 @@ tokenize(const char *source_code, struct token *tokens, const size_t size)
 
 	for (size_t i = 0; i <= size; i++) {
 		char c = source_code[i];
-		enum token_type t = check_token_type(c);
+		enum matsplat_token t = check_token_type(c);
 
 		if (t == COMMENT) {
 			if (c == '\n' || (c == '\r' && source_code[i + 1] == '\n')) {
@@ -90,7 +111,7 @@ tokenize(const char *source_code, struct token *tokens, const size_t size)
 				row = 1;
 			}
 		} else {
-			struct token new_token = {.type = t, .column = col, .row = row};
+			struct matsplat_src_token new_token = {.type = t, .column = col, .row = row};
 			tokens[tokens_idx] = new_token;
 			tokens_idx++;
 			row++;

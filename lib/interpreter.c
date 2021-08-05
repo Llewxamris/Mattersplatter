@@ -18,20 +18,20 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "mattersplatter.h"
 #include "jump_stack.h"
-#include "interpreter.h"
 
 uintmax_t
-execute(struct ast *in, char mem[], uintmax_t memsize)
+matsplat_execute(struct matsplat_ast *in, char mem[], uintmax_t memsize)
 {
-	struct ast *current = in;
+	struct matsplat_ast *current = in;
 	struct jump_stack jump_stack = jump_stack_create();
 	bool is_not_complete = true;
 	bool is_flow_left = false;
 	uintmax_t pointer = 0;
 
 	while(is_not_complete) {
-		struct token t = *current->token;
+		struct matsplat_src_token t = *current->token;
 		switch (t.type) {
 			case POINTER_RIGHT:
 				if (pointer == memsize - 1) {

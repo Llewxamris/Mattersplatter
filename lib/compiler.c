@@ -24,8 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "compiler.h"
 #include "jump_stack.h"
+#include "mattersplatter.h"
 
 enum subroutine_flags {
 SR_POINTER_RIGHT = 1 << 0,
@@ -93,10 +93,10 @@ append_to_block(struct source_block *src_block, const char *string, size_t len)
 	return 0;
 }
 
-static struct compilation_result
+static struct matsplat_compilation_result
 source_to_string(const struct source src)
 {
-	struct compilation_result result;
+	struct matsplat_compilation_result result;
 	const size_t src_length =
 		src.global.len
 		+ src.data.len
@@ -117,8 +117,8 @@ source_to_string(const struct source src)
 	return result;
 }
 
-struct compilation_result
-compile(struct ast *ast, size_t memsize)
+struct matsplat_compilation_result
+matsplat_compile(struct matsplat_ast *ast, size_t memsize)
 {
 	/* Global scaffolding text. */
 	const char *global_start = "global _start\n";
@@ -220,7 +220,7 @@ compile(struct ast *ast, size_t memsize)
 	struct source_block text;
 	struct source_block start;
 	struct jump_stack jump_stack = jump_stack_create();
-	struct compilation_result result =
+	struct matsplat_compilation_result result =
 		{.source_code = NULL, .source_code_len = 0, .error_code = 0};
 	uint8_t included_subroutines = 0x0;
 
@@ -272,10 +272,10 @@ compile(struct ast *ast, size_t memsize)
 	/* Parse the actual syntax tree. */
 	bool is_not_complete = true;
 	bool is_flow_left = false;
-	struct ast *current = ast;
+	struct matsplat_ast *current = ast;
 
 	while (is_not_complete) {
-		struct token t = *current->token;
+		struct matsplat_src_token t = *current->token;
 		switch (t.type) {
 			case POINTER_RIGHT:
 				if ((included_subroutines & SR_POINTER_RIGHT) == 0x0) {
@@ -366,7 +366,7 @@ compile(struct ast *ast, size_t memsize)
 }
 
 void
-compilation_result_destroy(struct compilation_result result)
+matsplat_compilation_result_destroy(struct matsplat_compilation_result result)
 {
 	if (result.source_code) {
 		free(result.source_code);
