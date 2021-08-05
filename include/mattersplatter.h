@@ -22,16 +22,16 @@
 #include <stdint.h>
 
 enum matsplat_token {
-POINTER_RIGHT = 1 << 0,
-POINTER_LEFT = 1 << 1,
-INCREMENT = 1 << 2,
-DECREMENT = 1 << 3,
-OUTPUT = 1 << 4,
-INPUT = 1 << 5,
-JUMP_FORWARD = 1 << 6,
-JUMP_BACKWARDS = 1 << 7,
-COMMENT = 1 << 8,
-END = 1 << 9,
+POINTER_RIGHT,
+POINTER_LEFT,
+INCREMENT,
+DECREMENT,
+OUTPUT,
+INPUT,
+JUMP_FORWARD,
+JUMP_BACKWARDS,
+COMMENT,
+END
 };
 
 struct matsplat_src_token {
