@@ -415,9 +415,7 @@ main(int argc, char *argv[])
 		}
 
 	} else {
-		char *mem = calloc(opts.mem_size, sizeof(char *));
-		matsplat_execute(ast, mem, opts.mem_size);
-		free(mem);
+		matsplat_execution_result_destory(matsplat_execute(ast, opts.mem_size));
 	}
 
 	matsplat_tokenize_destory(tokenize_result);

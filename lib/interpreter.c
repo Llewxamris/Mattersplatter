@@ -17,14 +17,16 @@
  */
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "mattersplatter.h"
 #include "jump_stack.h"
 
-uintmax_t
-matsplat_execute(struct matsplat_node *in, char mem[], uintmax_t memsize)
+struct matsplat_execution_result
+matsplat_execute(struct matsplat_node *start, size_t cell_count)
 {
-	struct matsplat_node *current = in;
+	int8_t *memory_cells = calloc(cell_count, sizeof(int8_t));
+	struct matsplat_node *current = start;
 	struct jump_stack jump_stack = jump_stack_create();
 	bool is_not_complete = true;
 	bool is_flow_left = false;
@@ -34,7 +36,7 @@ matsplat_execute(struct matsplat_node *in, char mem[], uintmax_t memsize)
 		struct matsplat_src_token t = *current->token;
 		switch (t.type) {
 			case POINTER_RIGHT:
-				if (pointer == memsize - 1) {
+				if (pointer == cell_count - 1) {
 					pointer = 0;
 				} else {
 					pointer++;
@@ -42,25 +44,25 @@ matsplat_execute(struct matsplat_node *in, char mem[], uintmax_t memsize)
 				break;
 			case POINTER_LEFT:
 				if (pointer == 0) {
-					pointer = memsize - 1;
+					pointer = cell_count - 1;
 				} else {
 					pointer--;
 				}
 				break;
 			case INCREMENT:
-				mem[pointer]++;
+				memory_cells[pointer]++;
 				break;
 			case DECREMENT:
-				mem[pointer]--;
+				memory_cells[pointer]--;
 				break;
 			case OUTPUT:
-				printf("%c", mem[pointer]);
+				printf("%c", memory_cells[pointer]);
 				break;
 			case INPUT:
-				scanf("%c", &mem[pointer]);
+				scanf("%c", &memory_cells[pointer]);
 				break;
 			case JUMP_FORWARD:
-				if (mem[pointer] == 0) {
+				if (memory_cells[pointer] == 0) {
 					/* If the cell at pointer is 0, skip the jump. */
 					is_flow_left = false;
 				} else {
@@ -69,7 +71,7 @@ matsplat_execute(struct matsplat_node *in, char mem[], uintmax_t memsize)
 				}
 				break;
 			case JUMP_BACKWARDS:
-				if (mem[pointer] != 0) {
+				if (memory_cells[pointer] != 0) {
 					// Go back to loop start if cell is non-zero
 					pop_jump_stack(&current, &jump_stack);
 					is_flow_left = true;
@@ -97,5 +99,17 @@ matsplat_execute(struct matsplat_node *in, char mem[], uintmax_t memsize)
 	}
 
 	jump_stack_destroy(jump_stack);
-	return pointer;
+
+	return (struct matsplat_execution_result)
+		{ .pointer = pointer, .cell_count = cell_count,
+		  .memory_cells = memory_cells };
+}
+
+
+void
+matsplat_execution_result_destory(struct matsplat_execution_result result)
+{
+	free(result.memory_cells);
+	result.cell_count = 0;
+	result.pointer = 0;
 }

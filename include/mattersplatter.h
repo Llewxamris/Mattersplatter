@@ -78,6 +78,17 @@ struct matsplat_node {
 	struct matsplat_src_token *token;
 };
 
+/*
+ * The result of the execution process. Contains the final location of the
+ * pointer, the count of cells used in execution, and resulting memory cells
+ * array.
+ */
+struct matsplat_execution_result {
+	size_t pointer;
+	size_t cell_count;
+	int8_t *memory_cells;
+};
+
 struct matsplat_compilation_result {
 	char *source_code;
 	size_t source_code_len;
@@ -112,6 +123,22 @@ matsplat_ast_create(struct matsplat_src_token *tokens, size_t len);
 void
 matsplat_ast_destroy(struct matsplat_node *root);
 
+/*
+ * Takes in a starting node & the requested amout of cells. Executes the
+ * application in place, directly reading/printing when required. Returns a
+ * result structure that contains the resulting memory array, the last position
+ * of the pointer, and the total cell count (same value as the argument).
+ */
+struct matsplat_execution_result
+matsplat_execute(struct matsplat_node *start, size_t cell_count);
+
+/*
+ * Frees any memory used by the memory array, and resets the pointer & length to
+ * 0.
+ */
+void
+matsplat_execution_result_destory(struct matsplat_execution_result result);
+
 struct matsplat_token_human_readable
 matsplat_token_to_human_readable(const enum matsplat_token type);
 
@@ -120,8 +147,5 @@ matsplat_compile(struct matsplat_node *ast, size_t mem);
 
 void
 matsplat_compilation_result_destroy(struct matsplat_compilation_result result);
-
-uintmax_t
-matsplat_execute(struct matsplat_node *in, char mem[], uintmax_t memsize);
 
 #endif // MATTERSPLATTER_H
