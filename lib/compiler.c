@@ -118,7 +118,7 @@ source_to_string(const struct source src)
 }
 
 struct matsplat_compilation_result
-matsplat_compile(struct matsplat_ast *ast, size_t memsize)
+matsplat_compile(struct matsplat_node *ast, size_t memsize)
 {
 	/* Global scaffolding text. */
 	const char *global_start = "global _start\n";
@@ -272,7 +272,7 @@ matsplat_compile(struct matsplat_ast *ast, size_t memsize)
 	/* Parse the actual syntax tree. */
 	bool is_not_complete = true;
 	bool is_flow_left = false;
-	struct matsplat_ast *current = ast;
+	struct matsplat_node *current = ast;
 
 	while (is_not_complete) {
 		struct matsplat_src_token t = *current->token;

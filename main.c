@@ -400,8 +400,8 @@ main(int argc, char *argv[])
 	printd_tokens(tokenize_result.tokens, tokenize_result.len, opts);
 	free(source_code);
 
-	struct matsplat_ast *ast
-		= matsplat_construct_ast(tokenize_result.tokens, tokenize_result.len);
+	struct matsplat_node *ast
+		= matsplat_ast_create(tokenize_result.tokens, tokenize_result.len);
 
 	struct invoke_assembler_result invoke_result = {0};
 	if (opts.mode == MODE_COMPILER) {

@@ -22,9 +22,9 @@
 #include "jump_stack.h"
 
 uintmax_t
-matsplat_execute(struct matsplat_ast *in, char mem[], uintmax_t memsize)
+matsplat_execute(struct matsplat_node *in, char mem[], uintmax_t memsize)
 {
-	struct matsplat_ast *current = in;
+	struct matsplat_node *current = in;
 	struct jump_stack jump_stack = jump_stack_create();
 	bool is_not_complete = true;
 	bool is_flow_left = false;

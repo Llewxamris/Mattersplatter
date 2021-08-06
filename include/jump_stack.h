@@ -21,7 +21,7 @@
 
 struct jump_stack {
 	size_t size;
-	struct matsplat_ast **stack;
+	struct matsplat_node **stack;
 };
 
 struct jump_stack
@@ -31,10 +31,10 @@ void
 jump_stack_destroy(struct jump_stack);
 
 void
-push_jump_stack(struct matsplat_ast *, struct jump_stack *);
+push_jump_stack(struct matsplat_node *, struct jump_stack *);
 
 void
-pop_jump_stack(struct matsplat_ast **, struct jump_stack *);
+pop_jump_stack(struct matsplat_node **, struct jump_stack *);
 
 
 #endif // MATTERSPLATTER_JUMP_STACK_H
