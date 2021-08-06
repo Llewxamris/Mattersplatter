@@ -18,6 +18,11 @@ struct matsplat_node \*matsplat_ast_create(struct matsplat_src_token _\*tokens_,
 
 void matsplat_ast_destroy(struct matsplat_node _\*root_);
 
+struct matsplat_execution_result matsplat_execute(struct matsplat_node \*start,
+	size_t cell_count);
+
+void matsplat_execution_result_destory(struct matsplat_execution_result result);
+
 # DESCRIPTION
 
 The *matsplat_tokenize()* function takes in some Brainf\*ck code _src_code_ and
@@ -37,6 +42,32 @@ generating an abstract syntax tree.
 
 The *matsplat_ast_destroy()* function deallocates all nodes.
 
+The *matsplat_execute()* function executes the application in-place. That is, it
+modifies values, moves the pointer, reads, and writes the moment the operation
+is found. It takes in _start_ which is treated as the root node of the
+application, and _cell\_count_ which is the amount of 8-bit memory cells made
+available to the application. It returns a *struct matsplat_execution_result*.
+This struct has three field:
+
+. size\_t *pointer* :: The final position of the pointer.
+. size\_t *cell_count* :: The amount of cells & the length of _memory_cells_.
+. int8\_t \**memory_cells* :: The array after the program has executed.
+
+Since *memory_cells* is dynamically allocated, the resulting structure should
+be destroyed with *matsplat_execution_result_destroy()*.
+
+The function *matsplat_execution_result_destroy()* deallocates *struct
+matsplat_execution_result*. Specifically, the _memory\_cells_ field. This
+function should be called even if the caller does not wish to store the results
+struct. In that case, the caller should do something like the following:
+
+```
+		matsplat_execution_result_destory(
+				matsplat_execute(node, cell_count));
+```
+
+Failure to do so will result in a memory leak.
+
 # RETURN VALUE
 
 *matsplat_tokenize()* returns the results struct.
@@ -46,6 +77,10 @@ The *matsplat_ast_destroy()* function deallocates all nodes.
 *matsplat_ast_create()* returns a pointer to the root node of the AST.
 
 *matsplat_ast_destroy()* returns _void_.
+
+*matsplat_execute()* returns the results struct.
+
+*matsplat_execution_result_destroy()* returns _void_.
 
 # COPYRIGHT
 

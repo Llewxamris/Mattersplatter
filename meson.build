@@ -68,7 +68,7 @@ if scdoc.found()
     input: 'doc/mattersplatter.3.scd',
     output: 'mattersplatter.3',
     command: [
-      sh, '-c', '@0@ < @INPUT@ > @OUTPUT@'.format(scdoc.path())
+      sh, '-c', '@0@ < @INPUT@ > mattersplatter.3'.format(scdoc.path())
     ],
     install: true,
     install_dir: '@0@/man@1@'.format(mandir, '3')
