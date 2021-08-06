@@ -36,7 +36,7 @@ matsplat_ast_destroy(struct matsplat_node *ast) {
 static struct matsplat_node
 *ast_create(struct matsplat_src_token *tokens, size_t len, size_t *pos)
 {
-	if (*pos > len) {
+	if (*pos >= len) {
 		return NULL;
 	}
 	struct matsplat_src_token *t = &tokens[*pos];
