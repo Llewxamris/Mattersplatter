@@ -20,85 +20,72 @@
 #include <stdlib.h>
 
 #include "mattersplatter.h"
-#include "jump_stack.h"
+
+static void
+execute(struct matsplat_node *node, size_t *pointer, int8_t *memory_cells,
+	size_t cell_count)
+{
+
+	if (node->token->type == END || node->token->type == JUMP_BACKWARDS) {
+		return;
+	} else if (node->token->type == JUMP_FORWARD) {
+		while (memory_cells[*pointer] != 0) {
+			execute(node->left_child, pointer, memory_cells,
+				cell_count);
+		}
+
+		execute(node->right_child, pointer, memory_cells,
+			cell_count);
+		return;
+	} 
+	switch (node->token->type) {
+		case POINTER_RIGHT:
+			if (*pointer == cell_count - 1) {
+				*pointer = 0;
+			} else {
+				*pointer += 1;
+			}
+			break;
+		case POINTER_LEFT:
+			if (*pointer == 0) {
+				*pointer = cell_count - 1;
+			} else {
+				*pointer -= 1;
+			}
+			break;
+		case INCREMENT:
+			memory_cells[*pointer]++;
+			break;
+		case DECREMENT:
+			memory_cells[*pointer]--;
+			break;
+		case OUTPUT:
+			printf("%c", memory_cells[*pointer]);
+			break;
+		case INPUT:
+			scanf("%c", &memory_cells[*pointer]);
+			break;
+		case COMMENT:
+			/*
+			 * No comment tokens should be present. If they are,
+			 * treat as NOOP.
+			 */
+			 /* Fallthrough */
+		default:
+			break;
+	}
+
+	execute(node->right_child, pointer, memory_cells, cell_count);
+	return;
+}
 
 struct matsplat_execution_result
 matsplat_execute(struct matsplat_node *start, size_t cell_count)
 {
 	int8_t *memory_cells = calloc(cell_count, sizeof(int8_t));
-	struct matsplat_node *current = start;
-	struct jump_stack jump_stack = jump_stack_create();
-	bool is_not_complete = true;
-	bool is_flow_left = false;
 	uintmax_t pointer = 0;
 
-	while(is_not_complete) {
-		struct matsplat_src_token t = *current->token;
-		switch (t.type) {
-			case POINTER_RIGHT:
-				if (pointer == cell_count - 1) {
-					pointer = 0;
-				} else {
-					pointer++;
-				}
-				break;
-			case POINTER_LEFT:
-				if (pointer == 0) {
-					pointer = cell_count - 1;
-				} else {
-					pointer--;
-				}
-				break;
-			case INCREMENT:
-				memory_cells[pointer]++;
-				break;
-			case DECREMENT:
-				memory_cells[pointer]--;
-				break;
-			case OUTPUT:
-				printf("%c", memory_cells[pointer]);
-				break;
-			case INPUT:
-				scanf("%c", &memory_cells[pointer]);
-				break;
-			case JUMP_FORWARD:
-				if (memory_cells[pointer] == 0) {
-					/* If the cell at pointer is 0, skip the jump. */
-					is_flow_left = false;
-				} else {
-					push_jump_stack(current, &jump_stack);
-					is_flow_left = true;
-				}
-				break;
-			case JUMP_BACKWARDS:
-				if (memory_cells[pointer] != 0) {
-					// Go back to loop start if cell is non-zero
-					pop_jump_stack(&current, &jump_stack);
-					is_flow_left = true;
-					push_jump_stack(current, &jump_stack);
-				} else {
-					pop_jump_stack(&current, &jump_stack);
-					is_flow_left = false;
-				}
-				break;
-			case COMMENT:
-				// No comment tokens should be present. If they
-				// are, treat as NOOP.
-				break;
-			case END:
-				is_not_complete = false;
-				break;
-		}
-
-		if (is_flow_left) {
-			current = current->left_child;
-			is_flow_left = false;
-		} else {
-			current = current->right_child;
-		}
-	}
-
-	jump_stack_destroy(jump_stack);
+	execute(start, &pointer, memory_cells, cell_count);
 
 	return (struct matsplat_execution_result)
 		{ .pointer = pointer, .cell_count = cell_count,
