@@ -63,4 +63,14 @@ if scdoc.found()
     install: true,
     install_dir: '@0@/man@1@'.format(mandir, '1')
   )
+  custom_target(
+    'matsplat_tokenize.3',
+    input: 'doc/matsplat_tokenize.3.scd',
+    output: 'matsplat_tokenize.3',
+    command: [
+      sh, '-c', '@0@ < @INPUT@ > matsplat_tokenize.3'.format(scdoc.path())
+    ],
+    install: true,
+    install_dir: '@0@/man@1@'.format(mandir, '3')
+  )
 endif
