@@ -43,7 +43,7 @@ struct matsplat_ast
 	struct jump_stack jump_stack = jump_stack_create();
 	bool is_flow_left = false;
 
-	for(size_t i = 0; i <= token_ln; i++) {
+	for(size_t i = 0; i < token_ln; i++) {
 		/* Explicitly handle setting the root node. */
 		if (root == NULL) {
 			root = (struct matsplat_ast*)

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "mattersplatter.h"
 
@@ -94,28 +95,40 @@ matsplat_token_to_human_readable(const enum matsplat_token type)
 	}
 }
 
-size_t
-matsplat_tokenize(const char *source_code, struct matsplat_src_token *tokens, const size_t size)
+struct matsplat_tokenize_result
+matsplat_tokenize(const char *src_code, const size_t len)
 {
 	uintmax_t col = 0;
 	uintmax_t row = 1;
 	size_t tokens_idx = 0;
+	struct matsplat_tokenize_result result = { .len = 0,
+		 .tokens = calloc(1, sizeof(struct matsplat_src_token)) };
 
-	for (size_t i = 0; i <= size; i++) {
-		char c = source_code[i];
+	for (size_t i = 0; i <= len; i++) {
+		char c = src_code[i];
 		enum matsplat_token t = check_token_type(c);
 
 		if (t == COMMENT) {
-			if (c == '\n' || (c == '\r' && source_code[i + 1] == '\n')) {
+			if (c == '\n' || (c == '\r' && src_code[i + 1] == '\n')) {
 				col++;
 				row = 1;
 			}
 		} else {
 			struct matsplat_src_token new_token = {.type = t, .column = col, .row = row};
-			tokens[tokens_idx] = new_token;
+			result.len += 1;
+			result.tokens = realloc(result.tokens,
+				result.len * sizeof(struct matsplat_src_token));
+			result.tokens[tokens_idx] = new_token;
 			tokens_idx++;
 			row++;
 		}
 	}
-	return tokens_idx - 1;
+	return result;
+}
+
+void
+matsplat_tokenize_destory(struct matsplat_tokenize_result result)
+{
+	free(result.tokens);
+	result.len = 0;
 }

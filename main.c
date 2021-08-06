@@ -368,9 +368,7 @@ main(int argc, char *argv[])
 {
 	const struct options opts = options_create(argc, argv);
 	char *source_code = NULL;
-	struct matsplat_src_token *tokens = NULL;
 	intmax_t file_size;
-	size_t token_count;
 	uint8_t err = 0;
 
 	if (opts.mode == MODE_HELP) {
@@ -395,14 +393,15 @@ main(int argc, char *argv[])
 		 opts.in_file_name);
 	printd_file(source_code, opts.in_file_name, file_size, opts);
 
-	tokens = calloc(file_size, sizeof(struct matsplat_src_token));
 	printf_v(opts, "Lexer beginning to parse source code...\n");
-	token_count = matsplat_tokenize(source_code, tokens, file_size);
+	struct matsplat_tokenize_result tokenize_result =
+		matsplat_tokenize(source_code,file_size);
 	printf_v(opts, "..parsing complete (enable debug for more information).\n");
-	printd_tokens(tokens, token_count, opts);
+	printd_tokens(tokenize_result.tokens, tokenize_result.len, opts);
 	free(source_code);
 
-	struct matsplat_ast *ast = matsplat_construct_ast(tokens, token_count);
+	struct matsplat_ast *ast
+		= matsplat_construct_ast(tokenize_result.tokens, tokenize_result.len);
 
 	struct invoke_assembler_result invoke_result = {0};
 	if (opts.mode == MODE_COMPILER) {
@@ -421,7 +420,7 @@ main(int argc, char *argv[])
 		free(mem);
 	}
 
-	free(tokens);
+	matsplat_tokenize_destory(tokenize_result);
 	matsplat_ast_destroy(ast);
 	exit(EXIT_SUCCESS);
 
