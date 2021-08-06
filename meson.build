@@ -55,7 +55,7 @@ if scdoc.found()
   mandir = get_option('mandir')
   custom_target(
     'mattersplatter.1',
-    input: 'mattersplatter.1.scd',
+    input: 'doc/mattersplatter.1.scd',
     output: 'mattersplatter.1',
     command: [
       sh, '-c', '@0@ < @INPUT@ > mattersplatter.1'.format(scdoc.path())
