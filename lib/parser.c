@@ -48,7 +48,6 @@ struct matsplat_node
 		if (root == NULL) {
 			root = (struct matsplat_node*)
 				malloc(sizeof(struct matsplat_node));
-			root->parent = NULL;
 			root->left_child = NULL;
 			root->right_child = NULL;
 			root->token = &tokens[i];
@@ -58,7 +57,6 @@ struct matsplat_node
 		struct matsplat_src_token *t = &tokens[i];
 		current = (struct matsplat_node*)
 			malloc(sizeof(struct matsplat_node));
-		current->parent = parent;
 		current->left_child = NULL;
 		current->right_child = NULL;
 		current->token = t;
