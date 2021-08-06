@@ -346,6 +346,7 @@ matsplat_compile(struct matsplat_node *ast, size_t memsize)
 
 		if (is_flow_left) {
 			current = current->left_child;
+			is_flow_left = false;
 		} else {
 			current = current->right_child;
 		}

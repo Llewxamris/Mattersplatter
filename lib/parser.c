@@ -18,7 +18,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "jump_stack.h"
 #include "mattersplatter.h"
 
 void
@@ -34,49 +33,35 @@ matsplat_ast_destroy(struct matsplat_node *ast) {
 	free(ast);
 }
 
+static struct matsplat_node
+*ast_create(struct matsplat_src_token *tokens, size_t len, size_t *pos)
+{
+	if (*pos > len) {
+		return NULL;
+	}
+	struct matsplat_src_token *t = &tokens[*pos];
+	struct matsplat_node *node =
+		(struct matsplat_node*) calloc(1, sizeof(struct matsplat_node));
+	node->token = t;
+	node->left_child = NULL;
+	node->right_child = NULL;
+
+	*pos += 1;
+	if (t->type == JUMP_FORWARD) {
+		node->left_child = ast_create(tokens, len, pos);
+		node->right_child = ast_create(tokens, len, pos);
+		return node;
+	} else if (t->type == JUMP_BACKWARDS) {
+		return node;
+	} else {
+		node->right_child = ast_create(tokens, len, pos);
+		return node;
+	}
+}
+
 struct matsplat_node
 *matsplat_ast_create(struct matsplat_src_token *tokens, size_t len)
 {
-	struct matsplat_node *root = NULL;
-	struct matsplat_node *current = NULL;
-	struct matsplat_node *parent = NULL;
-	struct jump_stack jump_stack = jump_stack_create();
-	bool is_flow_left = false;
-
-	for(size_t i = 0; i < len; i++) {
-		/* Explicitly handle setting the root node. */
-		if (root == NULL) {
-			root = (struct matsplat_node*)
-				malloc(sizeof(struct matsplat_node));
-			root->left_child = NULL;
-			root->right_child = NULL;
-			root->token = &tokens[i];
-			parent = root;
-			continue;
-		}
-		struct matsplat_src_token *t = &tokens[i];
-		current = (struct matsplat_node*)
-			malloc(sizeof(struct matsplat_node));
-		current->left_child = NULL;
-		current->right_child = NULL;
-		current->token = t;
-
-		if (is_flow_left) {
-			parent->left_child = current;
-		} else {
-			parent->right_child = current;
-		}
-
-		if (current->token->type == JUMP_FORWARD) {
-			push_jump_stack(current, &jump_stack);
-			is_flow_left = true;
-		} else if (current->token->type == JUMP_BACKWARDS) {
-			pop_jump_stack(&current, &jump_stack);
-			is_flow_left = false;
-		}
- 		parent = current;
-	}
-
-	free(jump_stack.stack);
-	return root;
+	size_t pos = 0;
+	return ast_create(tokens, len, &pos);
 }

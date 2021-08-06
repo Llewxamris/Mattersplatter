@@ -90,6 +90,7 @@ matsplat_execute(struct matsplat_node *in, char mem[], uintmax_t memsize)
 
 		if (is_flow_left) {
 			current = current->left_child;
+			is_flow_left = false;
 		} else {
 			current = current->right_child;
 		}
