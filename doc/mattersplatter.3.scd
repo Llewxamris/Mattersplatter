@@ -23,7 +23,7 @@ struct matsplat_execution_result matsplat_execute(struct matsplat_node \*start,
 
 void matsplat_execution_result_destory(struct matsplat_execution_result result);
 
-struct matsplat_compilation_result matsplat_compile(struct matsplat_node *ast,
+struct matsplat_compilation_result matsplat_compile(struct matsplat_node \*ast,
 	size_t mem);
 
 void matsplat_compilation_result_destroy(
