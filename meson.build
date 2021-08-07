@@ -29,7 +29,6 @@ ms_lib = library('mattersplatter',
     'lib/jump_stack.c',
     'lib/lexer.c',
     'lib/parser.c',
-    'lib/mattersplatter.c'
   ],
   soversion: '0.1.0',
   include_directories: ms_include,
