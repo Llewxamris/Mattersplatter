@@ -8,7 +8,7 @@ libmattersplatter - Mattersplatter C API
 
 \#include <mattersplatter.h>
 
-struct matsplat_tokenize_result matsplat_tokenize(const char _\*src_code_,
+truct matsplat_tokenize_result matsplat_tokenize(const char _\*src_code_,
 	const size_t _len_);
 
 void matsplat_tokenize_destroy(struct matsplat_tokenize_result _result_);
@@ -22,6 +22,12 @@ struct matsplat_execution_result matsplat_execute(struct matsplat_node \*start,
 	size_t cell_count);
 
 void matsplat_execution_result_destory(struct matsplat_execution_result result);
+
+struct matsplat_compilation_result matsplat_compile(struct matsplat_node *ast,
+	size_t mem);
+
+void matsplat_compilation_result_destroy(
+	struct matsplat_compilation_result result);
 
 # DESCRIPTION
 
@@ -68,6 +74,23 @@ struct. In that case, the caller should do something like the following:
 
 Failure to do so will result in a memory leak.
 
+The function *matsplat_compile()* generates x86\_64 assembly based on the
+provided _ast_. The amount of memory declared in the assembly is based off of
+the _cell\_count_ value. It returns a *struct matsplat_compilation_result*. This
+struct has three fields:
+
+. char *\*source_code* :: The assembly source code
+. size\_t *source_code_len* :: The length of the _source\_code_ field
+. int *error_code* :: The error identifier
+
+If _error\_code_ is non-zero, then the compilation process failed. The only
+reason for this is if a call to *calloc*(3) fails. This means the value of
+_error\_code_ will match a possible error value from *calloc*.
+
+The function *matsplat_compilation_result_destroy()* takes in a *struct
+matsplat_compilation_result*, deallocates the _source\_code_ field and sets the
+other two fields to 0.
+
 # RETURN VALUE
 
 *matsplat_tokenize()* returns the results struct.
@@ -81,6 +104,10 @@ Failure to do so will result in a memory leak.
 *matsplat_execute()* returns the results struct.
 
 *matsplat_execution_result_destroy()* returns _void_.
+
+*matsplat_compile()* returns the results struct.
+
+*matsplat_compilation_result_destroy()* returns _void_.
 
 # COPYRIGHT
 

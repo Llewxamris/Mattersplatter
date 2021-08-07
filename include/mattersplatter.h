@@ -89,6 +89,10 @@ struct matsplat_execution_result {
 	int8_t *memory_cells;
 };
 
+/*
+ * The result of the compilation process. Contains the ASM source code, it's
+ * length, and a potential error code.
+ */
 struct matsplat_compilation_result {
 	char *source_code;
 	size_t source_code_len;
@@ -139,13 +143,19 @@ matsplat_execute(struct matsplat_node *start, size_t cell_count);
 void
 matsplat_execution_result_destory(struct matsplat_execution_result result);
 
-struct matsplat_token_human_readable
-matsplat_token_to_human_readable(const enum matsplat_token type);
-
+/*
+ * Takes in a starting node & the reqeusted amount of cells. Coverts the AST to
+ * assembly source code. Returns a result strucutre that contains the source
+ * code, the length of the source code, and a potential error code.
+ */
 struct matsplat_compilation_result
-matsplat_compile(struct matsplat_node *ast, size_t mem);
+matsplat_compile(struct matsplat_node *ast, size_t cell_count);
 
+/* Free's up memory used by the compilation result struct. */
 void
 matsplat_compilation_result_destroy(struct matsplat_compilation_result result);
+
+struct matsplat_token_human_readable
+matsplat_token_to_human_readable(const enum matsplat_token type);
 
 #endif // MATTERSPLATTER_H
